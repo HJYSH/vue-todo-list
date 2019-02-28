@@ -1,0 +1,104 @@
+﻿<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>用Vue做一个todolist</title>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+<script
+	src="jquery-3.3.1.min.js"></script>
+<style>
+	.finshed{text-decoration: underline;color:rgba(139,33,35,1.00)}
+	.app{}
+	ul{padding:0}
+	</style>
+</head>
+<body style="background-color:rgba(102,236,209,1.00);">
+
+      <div id="app" class="app">
+        <h1>{{title}}</h1>
+        <input class="form-control-sm" v-model="newItem" @keyup.enter="addNew"/>
+        <button class="btn" @click="addNew">add</button>
+        <ul>
+          <li v-for="(item, index) in items"  @click="toggleFinsh(item)" style="padding:5px 0;list-style-type: none;color:rgba(14,46,239,1.00);">
+            <input type="checkbox" v-model="item.isFinshed" style="width:15px;height:15px;position: relative;top:2px;"
+			>
+            <label v-bind:class="{finshed:item.isFinshed}">{{item.label}}</label>
+            <button class="btn btn-default btn-sm" @click="removetodo(index)">完成点我</button>
+            </li>
+          </ul>
+          <div v-if="finishs.length">
+              <h3>已经完成的项目</h3>
+              <ol style="padding-left:20px">
+                  <li v-for="(finish,index) in finishs" style="padding:3px 0">{{finish.label}}<button class="btn btn-default btn-sm" v-on:click="removefinish(index)">X</button></li>
+              </ol>
+          </div>
+        </div>
+<script>
+	//使用本地缓存，存储todo list内容。
+var STORAGE_KEY='todos-vuejs';
+var todostorage={
+    fetch:function(){
+        return JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '[]')
+    },
+    save:function(items){
+        window.localStorage.setItem(STORAGE_KEY,JSON.stringify(items))
+    }
+}
+var STORAGE_KEY2='todos-vuejs2';
+var todostorage2={
+    fetch:function(){
+        return JSON.parse(window.localStorage.getItem(STORAGE_KEY2) || '[]')
+    },
+    save:function( finishs ){
+        window.localStorage.setItem(STORAGE_KEY2,JSON.stringify(finishs))
+    }
+}
+new Vue({
+    el:'#app',
+    data:{
+        title:'this is a todo list',
+        items:todostorage.fetch(),//调用本地缓存中的数据——
+        newItem:'',
+        finishs:todostorage2.fetch(),
+    },
+    watch:{
+      items:{
+        handler (items){
+        todostorage.save(items)//监听items的数据变化，当数据变化时，将数据存入todostorage.save(items),以方便下次打开页面，上次的数据不会丢失。
+        },
+        deep:true
+      },
+    finishs:{
+        handler (finishs){
+            todostorage2.save(finishs)//监听finishs的数据变化，当数据变化时，将数据存入todostorage.save(items),以方便下次打开页面，上次的数据不会丢失。
+            },
+            deep:true
+        }
+    },
+    methods:{
+        toggleFinsh (item){
+            item.isFinshed=!item.isFinshed
+        },
+        addNew (){
+            if (this.newItem) {
+                this.items.push({
+                    label:this.newItem,
+                    isFinshed:false
+                })
+                this.newItem=''
+            }
+        },
+        removefinish(e){
+            this.finishs.splice(e,1);
+        },
+        removetodo(e){
+            this.finishs.push(this.items[e]);
+            this.items.splice(e,1);
+
+        }
+    }
+})
+</script>
+</body>
+</html>
